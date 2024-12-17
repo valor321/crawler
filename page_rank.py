@@ -5,7 +5,8 @@ import argparse
 from progress import Progress
 
 
-def load_graph(args):
+def load_graph(file):
+
     """Load graph from text file
 
     Parameters:
@@ -14,11 +15,19 @@ def load_graph(args):
     Returns:
     A dict mapling a URL (str) to a list of target URLs (str).
     """
-    # Iterate through the file line by line
-    for line in args.datafile:
-        # And split each line into two URLs
-        node, target = line.split()
-        raise RuntimeError("This function is not implemented yet.")
+    graph = {}
+
+    with open(file, "r") as f:
+        # Iterate through the file line by line
+        for line in f:
+            # And split each line into two URLs
+            node = line.split()
+            if len(node) >= 1:
+                url = node[0]
+                target = node[1:]
+                graph[url] = target
+    return graph
+            #raise RuntimeError("This function is not implemented yet.")
 
 
 def print_stats(graph):
@@ -70,10 +79,14 @@ parser.add_argument('-n', '--number', type=int, default=20, help="number of resu
 
 
 if __name__ == '__main__':
+
+    print(load_graph(file="school_web2024-1.txt"))
+
+    '''
     args = parser.parse_args()
     algorithm = distribution_page_rank if args.method == 'distribution' else stochastic_page_rank
 
-    graph = load_graph(args)
+    graph = load_graph("school_web2024-1.txt")
 
     print_stats(graph)
 
@@ -86,3 +99,4 @@ if __name__ == '__main__':
     sys.stderr.write(f"Top {args.number} pages:\n")
     print('\n'.join(f'{100*v:.2f}\t{k}' for k,v in top[:args.number]))
     sys.stderr.write(f"Calculation took {time:.2f} seconds.\n")
+    '''
