@@ -1,15 +1,13 @@
 import sys
-import os
 import time
 import argparse
-import random
-
-import ranking
+from collections import defaultdict
+from random import choice
 
 
 def load_graph(filename):
 
-    graphL = {}
+    graphL = defaultdict(list)
 
     with open(filename, "r") as f:
         # Iterate through the file line by line
@@ -17,14 +15,9 @@ def load_graph(filename):
             # And split each line into two URLs
             node = line.strip().split()
             if len(node)  == 2:
-                url = node[0].strip()
-                target = (node[1].strip())
+                url, target = node[0], node[1]
                 #check if the url is already in the dic and assigns another value to it
-                if url in graphL:
-                    graphL[url].append(target)
-                else:
-                    #otherwise created a new dic value
-                    graphL[url] = [target]
+            graphL[url].append(target)
 
     return graphL
 
@@ -39,19 +32,19 @@ def print_stats(graphL):
 def stochastic_page_rank(graphP, args):
 
     #how many times a node is visited
-    hit_count = {node: 0 for node in graphP}
+    hit_count = defaultdict(int)
 
-    current_node = random.choice(list(graphP.keys()))
+    current_node = choice(list(graphP))
 
     hit_count[current_node] += 1
 
     for _ in range(args.repeats):
         if not graphP[current_node]:
             #if they dont have edges, choose another node
-            current_node = random.choice(list(graphP.keys()))
+            current_node = choice(list(graphP.keys()))
         else:
             #seeing if they have edges
-            current_node = random.choice(graphP[current_node])
+            current_node = choice(graphP[current_node])
 
         hit_count[current_node] += 1
 
@@ -60,24 +53,13 @@ def stochastic_page_rank(graphP, args):
 
 
 def distribution_page_rank(graphD, args):
-    """Probabilistic PageRank estimation
 
-    Parameters:
-    graph -- a graph object as returned by load_graph()
-    args -- arguments named tuple
-
-    Returns:
-    A dict that assigns each page its probability to be reached
-
-    This function estimates the Page Rank by iteratively calculating
-    the probability that a random walker is currently on any node.
-    """
     #prob. of all nodes balanced
-    node_prob = {node: 1/len(graphD) for node in graphD}
+    node_prob = defaultdict(float, {node: 1/len(graphD) for node in graphD})
 
     for _ in range(args.steps):
         #all nodes prob. to 0
-        next_prob = {node: 0 for node in graphD}
+        next_prob = defaultdict(float)
         #update all nodes prob
         for node in graphD:
             p = node_prob[node] / len(graphD[node])
@@ -89,13 +71,11 @@ def distribution_page_rank(graphD, args):
 
     return node_prob
 
-    #raise RuntimeError("This function is not implemented yet.")
-
 
 parser = argparse.ArgumentParser(description="Estimates page ranks from link information")
 parser.add_argument('datafile', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
                     help="Textfile of links among web pages as URL tuples")
-parser.add_argument('-m', '--method', choices=('stochastic', 'distribution'), default='distribution',
+parser.add_argument('-m', '--method', choices=('stochastic', 'distribution'), default='stochastic',
                     help="selected page rank algorithm")
 parser.add_argument('-r', '--repeats', type=int, default=1_000_000, help="number of repetitions")
 parser.add_argument('-s', '--steps', type=int, default=100, help="number of steps a walker takes")
