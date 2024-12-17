@@ -4,6 +4,8 @@ import time
 import argparse
 import random
 
+import ranking
+
 
 def load_graph(filename):
 
@@ -118,8 +120,8 @@ if __name__ == '__main__':
     #stop = time.time()
     #time = stop - start
 
-    #top = sorted(ranking.items(), key=lambda item: item[1], reverse=True)
-    #sys.stderr.write(f"Top {args.number} pages:\n")
-    #print('\n'.join(f'{100*v:.2f}\t{k}' for k,v in top[:args.number]))
-    #sys.stderr.write(f"Calculation took {time:.2f} seconds.\n")
-    #'''
+    top = sorted(ranking.items(), key=lambda item: item[1], reverse=True)
+    sys.stderr.write(f"Top {args.number} pages:\n")
+    print('\n'.join(f'{100*v:.2f}\t{k}' for k,v in top[:args.number]))
+    sys.stderr.write(f"Calculation took {time:.2f} seconds.\n")
+
