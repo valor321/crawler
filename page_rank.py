@@ -36,7 +36,7 @@ def print_stats(graphL):
         print("Number of edges:", num_of_edges)
 
 
-def stochastic_page_rank(graphP, repeats):
+def stochastic_page_rank(graphP, args):
 
     #how many times a node is visited
     hit_count = {node: 0 for node in graphP}
@@ -45,7 +45,7 @@ def stochastic_page_rank(graphP, repeats):
 
     hit_count[current_node] += 1
 
-    for _ in range(repeats):
+    for _ in range(args.repeats):
         if not graphP[current_node]:
             #if they dont have edges, choose another node
             current_node = random.choice(list(graphP.keys()))
@@ -59,7 +59,7 @@ def stochastic_page_rank(graphP, repeats):
 
 
 
-def distribution_page_rank(graphD, steps):
+def distribution_page_rank(graphD, args):
     """Probabilistic PageRank estimation
 
     Parameters:
@@ -75,12 +75,12 @@ def distribution_page_rank(graphD, steps):
     #prob. of all nodes balanced
     node_prob = {node: 1/len(graphD) for node in graphD}
 
-    for _ in range(steps):
+    for _ in range(args.steps):
         #all nodes prob. to 0
         next_prob = {node: 0 for node in graphD}
         #update all nodes prob
         for node in graphD:
-            p = node_prob[node] / len(graphD) if graphD[node] else 0
+            p = node_prob[node] / len(graphD[node])
             #distrubute probs. of all edges
             for target in graphD[node]:
                 next_prob[target] += p
@@ -95,7 +95,7 @@ def distribution_page_rank(graphD, steps):
 parser = argparse.ArgumentParser(description="Estimates page ranks from link information")
 parser.add_argument('datafile', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
                     help="Textfile of links among web pages as URL tuples")
-parser.add_argument('-m', '--method', choices=('stochastic', 'distribution'), default='stochastic',
+parser.add_argument('-m', '--method', choices=('stochastic', 'distribution'), default='distribution',
                     help="selected page rank algorithm")
 parser.add_argument('-r', '--repeats', type=int, default=1_000_000, help="number of repetitions")
 parser.add_argument('-s', '--steps', type=int, default=100, help="number of steps a walker takes")
@@ -115,10 +115,10 @@ if __name__ == '__main__':
     graph = load_graph("school_web2024-1.txt")
     print_stats(graph)
 
-    #start = time.time()
-    #ranking = algorithm(graph, args)
-    #stop = time.time()
-    #time = stop - start
+    start = time.time()
+    ranking = algorithm(graph, args)
+    stop = time.time()
+    time = stop - start
 
     top = sorted(ranking.items(), key=lambda item: item[1], reverse=True)
     sys.stderr.write(f"Top {args.number} pages:\n")
